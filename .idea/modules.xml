@@ -8,8 +8,8 @@
       <module fileurl="file://$PROJECT_DIR$/gmall-common-util/gmall-common-util.iml" filepath="$PROJECT_DIR$/gmall-common-util/gmall-common-util.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-order/gmall-order.iml" filepath="$PROJECT_DIR$/gmall-order/gmall-order.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-service-util/gmall-service-util.iml" filepath="$PROJECT_DIR$/gmall-service-util/gmall-service-util.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gmall-user/gmall-user.iml" filepath="$PROJECT_DIR$/gmall-user/gmall-user.iml" />
       <module fileurl="file://$PROJECT_DIR$/lizhenggmall.iml" filepath="$PROJECT_DIR$/lizhenggmall.iml" />
-      <module fileurl="file://$PROJECT_DIR$/user/user.iml" filepath="$PROJECT_DIR$/user/user.iml" />
       <module fileurl="file://$PROJECT_DIR$/web-util/web-util.iml" filepath="$PROJECT_DIR$/web-util/web-util.iml" />
     </modules>
   </component>
