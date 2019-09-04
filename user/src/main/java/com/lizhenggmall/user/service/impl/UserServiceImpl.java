@@ -11,15 +11,15 @@ import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService{
-
+    @Autowired
+    private UserMapper userMapper;
     @Override
     public User getUserById(String id) {
         User user = userMapper.selectByPrimaryKey(id);
         return user;
     }
 
-    @Autowired
-    private UserMapper userMapper;
+
     @Override
     public List<User> getUserInfoListAll() {
         List<User> users = userMapper.selectAll();
