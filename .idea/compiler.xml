@@ -11,6 +11,7 @@
         <module name="gmall-common-util" />
         <module name="gmall-order" />
         <module name="gmall-service-util" />
+        <module name="gmall-user" />
         <module name="user" />
         <module name="web-util" />
       </profile>
@@ -23,7 +24,8 @@
       <module name="gmall-interface" target="1.8" />
       <module name="gmall-order" target="1.8" />
       <module name="gmall-service-util" target="1.8" />
-      <module name="user" target="1.8" />
+      <module name="gmall-user" target="1.8" />
+      <module name="user" target="1.6" />
       <module name="web-util" target="1.8" />
     </bytecodeTargetLevel>
   </component>

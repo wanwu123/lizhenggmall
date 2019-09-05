@@ -9,7 +9,7 @@
         <relativePath>../gamll-parent/pom.xml</relativePath>
     </parent>
     <groupId>com.atguigu.gmall</groupId>
-    <artifactId>user</artifactId>
+    <artifactId>gamll-user</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>user</name>
     <description>Demo project for Spring Boot</description>
