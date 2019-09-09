@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/fastdfs-client-java/fastdfs-client-java.iml" filepath="$PROJECT_DIR$/fastdfs-client-java/fastdfs-client-java.iml" />
       <module fileurl="file://$PROJECT_DIR$/gamll-interface/gamll-interface.iml" filepath="$PROJECT_DIR$/gamll-interface/gamll-interface.iml" />
       <module fileurl="file://$PROJECT_DIR$/gamll-parent/gamll-parent.iml" filepath="$PROJECT_DIR$/gamll-parent/gamll-parent.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-bean/gmall-bean.iml" filepath="$PROJECT_DIR$/gmall-bean/gmall-bean.iml" />

@@ -19,4 +19,10 @@ public interface ManagerService {
     List<BaseAttrValue> getAttrValueList(String attrId);
 
     BaseAttrInfo getBaseInfo(String attrId);
+
+    public void saveSpuInfo(SpuInfo spuInfo);
+    List<BaseSaleAttr> getBaseSaleAttrList();
+
+
+    public List<SpuInfo> selectSpulist(String catalog3Id);
 }

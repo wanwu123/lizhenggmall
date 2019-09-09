@@ -12,7 +12,6 @@ import java.util.List;
 
 @Controller
 @CrossOrigin
-
 public class ManagerController {
 
     @Reference
@@ -58,5 +57,22 @@ public class ManagerController {
         BaseAttrInfo baseAttrInfo = (BaseAttrInfo) managerService.getBaseInfo(attrId);
         List<BaseAttrValue> baseAttrList = baseAttrInfo.getAttrValueList();
         return baseAttrList;
+    }
+
+    @RequestMapping("baseSaleAttrList")
+    @ResponseBody
+    public List<BaseSaleAttr> getBaseSaleAttrList(){
+        return  managerService.getBaseSaleAttrList();
+    }
+    @RequestMapping(value = "saveSpuInfo",method = RequestMethod.POST)
+    public String saveSpuInfo(@RequestBody SpuInfo spuInfo){
+        managerService.saveSpuInfo(spuInfo);
+        return "success";
+    }
+    @RequestMapping(value = "spuList",method = RequestMethod.GET)
+    @ResponseBody
+    public List<SpuInfo> selectSpulist(String catalog3Id){
+        List<SpuInfo> spuInfos =  managerService.selectSpulist(catalog3Id);
+        return spuInfos;
     }
 }
