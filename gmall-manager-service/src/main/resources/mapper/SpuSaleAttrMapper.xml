@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.atguigu.gmall.mapper.SpuSaleAttrMapper">
+    <resultMap id="spuSaleAttrList" type="com.atguigu.gmall.entity.SpuSaleAttr">
+        <result property="id" column="id"></result>
+        <result property="spuId" column="spuId"></result>
+        <result property="saleAttrId" column="saleAttrId"></result>
+        <result property="saleAttrName" column="sale_attr_name"></result>
+        <collection property="spuSaleAttrValueList" ofType="com.atguigu.gmall.entity.SpuSaleAttrValue">
+            <result property="id" column="spuvalueId"></result>
+            <result property="spuId" column="spuId"></result>
+            <result property="saleAttrId" column="saleAttrId"></result>
+            <result property="saleAttrValueName" column="saleAttrValueName"></result>
+        </collection>
+
+    </resultMap>
+    <select id="getSpuSaleAttrList" resultMap="spuSaleAttrList">
+
+        SELECT ssa.id id,
+ssa.spu_id spuId,
+ssa.sale_attr_id saleAttrId,
+ssa.sale_attr_name,
+ssav.id spuvalueId,
+ssav.sale_attr_value_name saleAttrValueName
+from spu_sale_attr as ssa INNER JOIN spu_sale_attr_value as ssav
+on ssa.spu_id = ssav.spu_id AND
+ssa.sale_attr_id = ssav.sale_attr_id
+WHERE ssa.spu_id = #{spuId}
+
+    </select>
+
+</mapper>

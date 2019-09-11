@@ -75,4 +75,11 @@ public class ManagerController {
         List<SpuInfo> spuInfos =  managerService.selectSpulist(catalog3Id);
         return spuInfos;
     }
+
+    @RequestMapping(value = "spuSaleAttrList",method =RequestMethod.GET)
+    @ResponseBody
+    public List<SpuSaleAttr> getSpuSaleAttrList(String spuId){
+        List<SpuSaleAttr> list =  managerService.getSpuSaleAttrList(spuId);
+        return list;
+    }
 }

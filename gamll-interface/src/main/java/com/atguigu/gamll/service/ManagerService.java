@@ -25,4 +25,13 @@ public interface ManagerService {
 
 
     public List<SpuInfo> selectSpulist(String catalog3Id);
+
+    List<SpuImage> getSpuImageList(String spuId);
+
+    List<SpuSaleAttr> getspuSaleAttrList(String spuId);
+
+
+    List<SpuSaleAttr> getSpuSaleAttrList(String spuId);
+
+    void saveSkuInfo(SkuInfo skuForm);
 }
