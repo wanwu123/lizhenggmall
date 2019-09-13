@@ -4,8 +4,10 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.atguigu.gamll.service.ManagerService;
 import com.atguigu.gmall.entity.*;
 import com.atguigu.gmall.mapper.*;
+import com.atguigu.gmall.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.EscapedErrors;
+import redis.clients.jedis.Jedis;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.HashMap;
@@ -14,6 +16,8 @@ import java.util.Map;
 
 @Service
 public class ManagerServiceImpl implements ManagerService {
+    @Autowired
+    private RedisUtil redisUtil;
     @Override
     public Map getSaleAttrValuesByspuId(String spuId) {
         List<Map> saleAttrValuesByspuId = skuSaleAttrValueMapper.getSaleAttrValuesByspuId(spuId);
@@ -35,6 +39,9 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public SkuInfo getSkuInfo(String skuId) {
+        Jedis jedis = redisUtil.getJedis();
+        jedis.set("k1","v1");
+        jedis.close();
         SkuInfo skuInfo = skuInfoMapper.selectByPrimaryKey(skuId);
         SkuImage skuImage = new SkuImage();
         skuImage.setSkuId(skuId);
@@ -120,6 +127,8 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public List<SpuInfo> selectSpulist(String catalog3Id) {
+
+
         SpuInfo spuInfo = new SpuInfo();
         spuInfo.setCatalog3Id(catalog3Id);
         List<SpuInfo> spuInfoList = spuInfoMapper.select(spuInfo);
