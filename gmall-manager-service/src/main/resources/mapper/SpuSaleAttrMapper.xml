@@ -28,5 +28,34 @@ ssa.sale_attr_id = ssav.sale_attr_id
 WHERE ssa.spu_id = #{spuId}
 
     </select>
+    <select id="getSpuSaleAttrListCheck" resultMap="spuSaleAttrListCheck">
+SELECT ssa.id id,
+    ssa.spu_id spuId,
+    ssa.sale_attr_id saleAttrId,
+    ssa.sale_attr_name,
+    ssav.id spuvalueId,
+    ssav.sale_attr_value_name saleAttrValueName,
+    sav.sale_attr_value_id,
+    IF(sav.sale_attr_value_id is Null,'0','1') is_checked
+    from spu_sale_attr as ssa INNER JOIN spu_sale_attr_value as ssav
+    on ssa.spu_id = ssav.spu_id AND
+    ssa.sale_attr_id = ssav.sale_attr_id
+    LEFT JOIN sku_sale_attr_value sav on ssav.id = sav.sale_attr_value_id AND sav.sku_id = #{skuId}
+    WHERE ssa.spu_id = #{spuId}
+
+    </select>
+    <resultMap id="spuSaleAttrListCheck" type="com.atguigu.gmall.entity.SpuSaleAttr">
+        <result property="id" column="id"></result>
+        <result property="spuId" column="spuId"></result>
+        <result property="saleAttrId" column="saleAttrId"></result>
+        <result property="saleAttrName" column="sale_attr_name"></result>
+        <collection property="spuSaleAttrValueList" ofType="com.atguigu.gmall.entity.SpuSaleAttrValue" autoMapping="true">
+            <result property="id" column="spuvalueId"></result>
+            <result property="spuId" column="spuId"></result>
+            <result property="saleAttrId" column="saleAttrId"></result>
+            <result property="saleAttrValueName" column="saleAttrValueName"></result>
+        </collection>
+
+    </resultMap>
 
 </mapper>

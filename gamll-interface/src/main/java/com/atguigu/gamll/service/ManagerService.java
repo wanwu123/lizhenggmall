@@ -1,8 +1,10 @@
 package com.atguigu.gamll.service;
 
 import com.atguigu.gmall.entity.*;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ManagerService {
     public List<BaseCatalog1> getCatalog1();
@@ -34,4 +36,10 @@ public interface ManagerService {
     List<SpuSaleAttr> getSpuSaleAttrList(String spuId);
 
     void saveSkuInfo(SkuInfo skuForm);
+
+    public SkuInfo getSkuInfo(String skuId);
+
+    List<SpuSaleAttr> getSpuSaleAttrListCheck(String skuId,String spuId);
+
+    public Map getSaleAttrValuesByspuId(String spuId);
 }

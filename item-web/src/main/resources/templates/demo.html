@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<input th:value="${skuInfo.skuName}"  />
+<div th:text="${skuInfo.skuImageList}"></div>
+<table>
+    <tr th:each="skuImage:${skuInfo.skuImageList}">
+        <td th:text="${skuImage.imgName}">
+
+        </td>
+    </tr>
+</table>
+</body>
+</html>

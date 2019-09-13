@@ -8,10 +8,45 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.EscapedErrors;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ManagerServiceImpl implements ManagerService {
+    @Override
+    public Map getSaleAttrValuesByspuId(String spuId) {
+        List<Map> saleAttrValuesByspuId = skuSaleAttrValueMapper.getSaleAttrValuesByspuId(spuId);
+        Map<Object, Object> objectObjectHashMap = new HashMap<>();
+        for (Map map : saleAttrValuesByspuId) {
+            String sku_id =map.get("sku_id")+"";
+            String ids =map.get("value_id")+"";
+            objectObjectHashMap.put(ids,sku_id);
+        }
+        return objectObjectHashMap;
+    }
+
+    @Override
+    public List<SpuSaleAttr> getSpuSaleAttrListCheck(String skuId, String spuId) {
+        List<SpuSaleAttr> spuSaleAttrListCheck = spuSaleAttrMapper.getSpuSaleAttrListCheck(skuId, spuId);
+        return spuSaleAttrListCheck;
+
+    }
+
+    @Override
+    public SkuInfo getSkuInfo(String skuId) {
+        SkuInfo skuInfo = skuInfoMapper.selectByPrimaryKey(skuId);
+        SkuImage skuImage = new SkuImage();
+        skuImage.setSkuId(skuId);
+        List<SkuImage> skuImages = skuImageMapper.select(skuImage);
+        skuInfo.setSkuImageList(skuImages);
+        SkuSaleAttrValue skuSaleAttrValue = new SkuSaleAttrValue();
+        skuSaleAttrValue.setSkuId(skuId);
+        List<SkuSaleAttrValue> select = skuSaleAttrValueMapper.select(skuSaleAttrValue);
+        skuInfo.setSkuSaleAttrValueList(select);
+        return skuInfo;
+    }
+
     @Override
     public void saveSkuInfo(SkuInfo skuForm) {
         if (skuForm.getId()==null || skuForm.getId().length() == 0 ) {
