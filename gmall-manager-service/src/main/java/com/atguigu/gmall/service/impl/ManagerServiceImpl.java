@@ -1,10 +1,16 @@
 package com.atguigu.gmall.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.atguigu.gamll.service.ManagerService;
 import com.atguigu.gmall.entity.*;
 import com.atguigu.gmall.mapper.*;
 import com.atguigu.gmall.util.RedisUtil;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.EscapedErrors;
 import redis.clients.jedis.Jedis;
@@ -13,19 +19,26 @@ import tk.mybatis.mapper.entity.Example;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ManagerServiceImpl implements ManagerService {
+    public static final String SKUKEY_PREFIX = "sku:";
+    public static final String SKUKEY_INFO_SUFFIX = ":info";
+    public static final String SKUKEY_LOCK_SUFFIX = ":lock";
+    public static final int SKU_EXPIRE = 3;
     @Autowired
     private RedisUtil redisUtil;
+
     @Override
     public Map getSaleAttrValuesByspuId(String spuId) {
         List<Map> saleAttrValuesByspuId = skuSaleAttrValueMapper.getSaleAttrValuesByspuId(spuId);
         Map<Object, Object> objectObjectHashMap = new HashMap<>();
         for (Map map : saleAttrValuesByspuId) {
-            String sku_id =map.get("sku_id")+"";
-            String ids =map.get("value_id")+"";
-            objectObjectHashMap.put(ids,sku_id);
+            String sku_id = map.get("sku_id") + "";
+            String ids = map.get("value_id") + "";
+            objectObjectHashMap.put(ids, sku_id);
         }
         return objectObjectHashMap;
     }
@@ -39,36 +52,154 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public SkuInfo getSkuInfo(String skuId) {
+        SkuInfo skuInfoResult = null;
         Jedis jedis = redisUtil.getJedis();
-        jedis.set("k1","v1");
+        int SKU_EXPIRE = 100;
+        String skuKey = SKUKEY_PREFIX + skuId + SKUKEY_INFO_SUFFIX;
+        String skuInfoJson = jedis.get(skuKey);
+
+        if (skuInfoJson != null) {
+            if (!"EMPTY".equals(skuInfoJson)) {
+                System.out.println(Thread.currentThread() + "命中缓存");
+                skuInfoResult = JSON.parseObject(skuInfoJson, SkuInfo.class);
+            }
+        } else {
+            Config config = new Config();
+            config.useSingleServer().setAddress("redis://manage.gmall.com:6379");
+            RedissonClient redissonClient = Redisson.create(config);
+            String lockkey = SKUKEY_PREFIX + skuId + SKUKEY_LOCK_SUFFIX;
+            RLock lock = redissonClient.getLock(lockkey);
+//            lock.lock(10, TimeUnit.SECONDS);
+            boolean locked = false;
+            try {
+                locked = lock.tryLock(10, 5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (locked) {
+                //如果得到锁后能在缓存查询，那么直接用缓存
+                String skuJson = jedis.get(skuKey);
+
+                if (skuJson != null) {
+                    if (!"EMPTY".equals(skuJson)) {
+                        System.out.println(Thread.currentThread() + "再次命中缓存");
+                        skuInfoResult = JSON.parseObject(skuJson, SkuInfo.class);
+                    }
+                } else {
+                    skuInfoResult = getDbSku(skuId);
+                    String jsonString = null;
+                    if (skuInfoResult != null) {
+                        jsonString = JSON.toJSONString(skuInfoResult);
+                    } else {
+                        jsonString = "EMPTY";
+                    }
+                    System.out.println(Thread.currentThread() + "写入缓存");
+                    jedis.setex(skuKey, SKU_EXPIRE, jsonString);
+                    System.out.println(Thread.currentThread() + "释放锁");
+                }
+                lock.unlock();
+            }
+        }
+        return skuInfoResult;
+    }
+
+    /*@Override
+    public SkuInfo getSkuInfo(String skuId) {
+        SkuInfo skuInfoResult = null;
+        Jedis jedis = redisUtil.getJedis();
+        int SKU_EXPIRE = 100;
+        String skuKey = SKUKEY_PREFIX+skuId+SKUKEY_INFO_SUFFIX;
+        String skuInfoJson = jedis.get(skuKey);
+        if (skuInfoJson!=null){
+            if (!"EMPTY".equals(skuInfoJson)){
+                System.out.println(Thread.currentThread()+"命中缓存");
+                skuInfoResult= JSON.parseObject(skuInfoJson, SkuInfo.class);
+            }
+        }else {
+            String lockkey = SKUKEY_PREFIX+skuId+SKUKEY_LOCK_SUFFIX;
+//            Long locked = jedis.setnx(lockkey, "locked");
+//            jedis.expire(lockkey,10);'
+            String token  = UUID.randomUUID().toString();
+//            String locked = jedis.set(lockkey, "locked", "NX", "EX", 10);
+            String locked = jedis.set(lockkey, token, "NX", "EX", 10);
+            if ("OK".equals(locked)){
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread()+"得到锁");
+                System.out.println(Thread.currentThread()+"未命中缓存");
+                skuInfoResult = getDbSku(skuId);
+                String jsonString = null;
+                if (skuInfoResult != null){
+                    jsonString = JSON.toJSONString(skuInfoResult);
+                }else {
+                    jsonString = "EMPTY" ;
+                }
+                System.out.println(Thread.currentThread()+"写入缓存");
+                jedis.setex(skuKey,SKU_EXPIRE,jsonString);
+                System.out.println(Thread.currentThread()+"释放锁");
+                if (jedis.exists(lockkey) && token.equals(jedis.get(lockkey))){
+                    jedis.del(lockkey);
+                }
+            }else {
+                //等待
+                System.out.println(Thread.currentThread()+"等待");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                //重新查询
+                getSkuInfo(skuId);
+            }
+
+        }
         jedis.close();
-        SkuInfo skuInfo = skuInfoMapper.selectByPrimaryKey(skuId);
+        return skuInfoResult ;
+//        SkuInfo skuInfo = skuInfoMapper.selectByPrimaryKey(skuId);
+//        SkuImage skuImage = new SkuImage();
+//        skuImage.setSkuId(skuId);
+//        List<SkuImage> skuImages = skuImageMapper.select(skuImage);
+//        skuInfo.setSkuImageList(skuImages);
+//        SkuSaleAttrValue skuSaleAttrValue = new SkuSaleAttrValue();
+//        skuSaleAttrValue.setSkuId(skuId);
+//        List<SkuSaleAttrValue> select = skuSaleAttrValueMapper.select(skuSaleAttrValue);
+//        skuInfo.setSkuSaleAttrValueList(select);
+//        return skuInfo;
+    }*/
+    public SkuInfo getDbSku(String skuId) {
+        SkuInfo skuInfoResult = skuInfoMapper.selectByPrimaryKey(skuId);
+        if (skuInfoResult == null) {
+            return null;
+        }
         SkuImage skuImage = new SkuImage();
         skuImage.setSkuId(skuId);
         List<SkuImage> skuImages = skuImageMapper.select(skuImage);
-        skuInfo.setSkuImageList(skuImages);
+        skuInfoResult.setSkuImageList(skuImages);
         SkuSaleAttrValue skuSaleAttrValue = new SkuSaleAttrValue();
         skuSaleAttrValue.setSkuId(skuId);
         List<SkuSaleAttrValue> select = skuSaleAttrValueMapper.select(skuSaleAttrValue);
-        skuInfo.setSkuSaleAttrValueList(select);
-        return skuInfo;
+        skuInfoResult.setSkuSaleAttrValueList(select);
+        return skuInfoResult;
     }
 
     @Override
     public void saveSkuInfo(SkuInfo skuForm) {
-        if (skuForm.getId()==null || skuForm.getId().length() == 0 ) {
+        if (skuForm.getId() == null || skuForm.getId().length() == 0) {
             skuForm.setId(null);
             skuInfoMapper.insertSelective(skuForm);
-        }else {
+        } else {
             skuInfoMapper.updateByPrimaryKeySelective(skuForm);
         }
         SkuImage skuImage = new SkuImage();
         skuImage.setSkuId(skuForm.getId());
         skuImageMapper.delete(skuImage);
         List<SkuImage> skuImageList = skuForm.getSkuImageList();
-        if (skuImageList!= null && skuImageList.size()>0 ){
+        if (skuImageList != null && skuImageList.size() > 0) {
             for (SkuImage image : skuImageList) {
-                if(image.getId()!= null && image.getId().length()>0){
+                if (image.getId() != null && image.getId().length() > 0) {
                     image.setId(null);
                 }
                 image.setSkuId(skuForm.getId());
@@ -79,9 +210,9 @@ public class ManagerServiceImpl implements ManagerService {
         skuAttrValue.setAttrId(skuForm.getId());
         skuAttrValueMapper.delete(skuAttrValue);
         List<SkuAttrValue> skuAttrValueList = skuForm.getSkuAttrValueList();
-        if (skuAttrValueList != null && skuAttrValueList.size()>0){
+        if (skuAttrValueList != null && skuAttrValueList.size() > 0) {
             for (SkuAttrValue attrValue : skuAttrValueList) {
-                if (attrValue.getId() != null && attrValue.getId().length()!=0){
+                if (attrValue.getId() != null && attrValue.getId().length() != 0) {
                     attrValue.setId(null);
                 }
                 attrValue.setSkuId(skuForm.getId());
@@ -92,9 +223,9 @@ public class ManagerServiceImpl implements ManagerService {
         skuSaleAttrValue.setId(skuForm.getId());
         skuSaleAttrValueMapper.delete(skuSaleAttrValue);
         List<SkuSaleAttrValue> skuSaleAttrValueList = skuForm.getSkuSaleAttrValueList();
-        if (skuSaleAttrValueList !=null && skuSaleAttrValueList.size() !=0){
+        if (skuSaleAttrValueList != null && skuSaleAttrValueList.size() != 0) {
             for (SkuSaleAttrValue saleAttrValue : skuSaleAttrValueList) {
-                if (saleAttrValue.getId() != null && saleAttrValue.getId().length() != 0 ){
+                if (saleAttrValue.getId() != null && saleAttrValue.getId().length() != 0) {
                     saleAttrValue.setId(null);
                 }
                 saleAttrValue.setSkuId(skuForm.getId());
@@ -216,6 +347,7 @@ public class ManagerServiceImpl implements ManagerService {
 //        }
 
     }
+
     @Autowired
     private SkuSaleAttrValueMapper skuSaleAttrValueMapper;
     @Autowired

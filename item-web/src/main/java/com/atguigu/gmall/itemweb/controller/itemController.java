@@ -24,6 +24,9 @@ public class itemController {
     @GetMapping("/{skuId}.html")
     public String item(@PathVariable("skuId") String skuId, Model model){
         SkuInfo skuInfo = managerService.getSkuInfo(skuId);
+        if (skuInfo == null){
+            return null;
+        }
         String spuId = skuInfo.getSpuId();
         List<SpuSaleAttr> spuSaleAttrListCheck = managerService.getSpuSaleAttrListCheck(skuId, spuId);
         model.addAttribute("skuInfo",skuInfo);
