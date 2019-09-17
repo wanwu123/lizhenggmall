@@ -4,18 +4,26 @@ package com.atguigu.gmall.managerweb.controller;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.atguigu.gamll.service.ManagerService;
 import com.atguigu.gmall.entity.*;
+import com.atguigu.gamll.service.ListService;
+import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @CrossOrigin
 public class ManagerController {
 
+
     @Reference
     private ManagerService managerService;
+
+    @Reference
+    private ListService listService;
     @RequestMapping(value = "getCatalog1",method = RequestMethod.POST)
     @ResponseBody
     public List<BaseCatalog1> getCatalog1List(){
@@ -81,5 +89,25 @@ public class ManagerController {
     public List<SpuSaleAttr> getSpuSaleAttrList(String spuId){
         List<SpuSaleAttr> list =  managerService.getSpuSaleAttrList(spuId);
         return list;
+    }
+
+    public String onSaleByspuId(String spuId){
+        Map saleAttrValuesByspuId = managerService.getSaleAttrValuesByspuId(spuId);
+        return null;     
+    }
+    @RequestMapping(value = "onSale",method =RequestMethod.POST)
+    @ResponseBody
+    public String onSale(@RequestParam("skuId") String skuId){
+        SkuInfo skuInfo = managerService.getSkuInfo(skuId);
+        SkuLsInfo skuLsInfo = new SkuLsInfo();
+        try {
+            BeanUtils.copyProperties(skuLsInfo,skuInfo);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        listService.saveSkuLsInfo(skuLsInfo);
+        return "success";
     }
 }

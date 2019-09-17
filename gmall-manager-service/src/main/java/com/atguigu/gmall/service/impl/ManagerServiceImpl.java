@@ -182,6 +182,10 @@ public class ManagerServiceImpl implements ManagerService {
         skuSaleAttrValue.setSkuId(skuId);
         List<SkuSaleAttrValue> select = skuSaleAttrValueMapper.select(skuSaleAttrValue);
         skuInfoResult.setSkuSaleAttrValueList(select);
+        SkuAttrValue skuAttrValue = new SkuAttrValue();
+        skuAttrValue.setSkuId(skuId);
+        List<SkuAttrValue> select1 = skuAttrValueMapper.select(skuAttrValue);
+        skuInfoResult.setSkuAttrValueList(select1);
         return skuInfoResult;
     }
 
