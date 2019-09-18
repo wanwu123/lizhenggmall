@@ -24,5 +24,16 @@
         WHERE bai.catalog3_id = #{catalog3id}
 
    </select>
-
+    <select id="getBaseAttrInfoListByValueIds" resultMap="baseAttrList">
+--           SELECT bai.id,
+--         attr_name,
+--         catalog3_id,
+--         bav.id attr_value_id,
+--         bav.value_name
+--         FROM base_attr_info bai INNER JOIN base_attr_value bav
+--         on bai.id = bav.attr_id
+--         WHERE bav.id IN (${valueIds})
+        SELECT bi.id,attr_name,catalog3_id, ba.id attr_value_id,
+        ba.value_name from base_attr_info bi join base_attr_value ba on bi.id = ba.attr_id WHERE ba.id in (${valueIds})
+    </select>
 </mapper>

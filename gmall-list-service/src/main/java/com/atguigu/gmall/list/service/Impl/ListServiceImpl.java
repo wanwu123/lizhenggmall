@@ -9,6 +9,8 @@ import io.searchbox.client.JestClient;
 import io.searchbox.core.Index;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
+import io.searchbox.core.search.aggregation.MetricAggregation;
+import io.searchbox.core.search.aggregation.TermsAggregation;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -21,27 +23,38 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class ListServiceImpl implements ListService {
     @Override
     public SkuLsResult getSkuLsInfoList(SkuLsParams skuLsParams) {
-        String query = null;
-
+//        String query = null;
+        SkuLsResult skuLsResult = new SkuLsResult();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-        boolQueryBuilder.must(new MatchQueryBuilder("skuName",skuLsParams.getKeyword()));
-        boolQueryBuilder.filter(new TermQueryBuilder("catalog3Id",skuLsParams.getCatalog3Id()));
-        String[] valueIds = skuLsParams.getValueId();
-        for (int i = 0; i < valueIds.length; i++) {
-            String valueId = valueIds[i];
-            boolQueryBuilder.filter(new TermQueryBuilder("skuAttrValueList.valueId",valueId));
+        if (skuLsParams.getKeyword()!=null){
+            boolQueryBuilder.must(new MatchQueryBuilder("skuName",skuLsParams.getKeyword()));
+            //高亮
+            searchSourceBuilder.highlight(new HighlightBuilder().field("skuName").preTags("<span style='color:red' >").postTags("</span>"));
         }
-        boolQueryBuilder.filter(new RangeQueryBuilder("price").gte("1800"));
+        if (skuLsParams.getCatalog3Id()!=null){
+            boolQueryBuilder.filter(new TermQueryBuilder("catalog3Id",skuLsParams.getCatalog3Id()));
+        }
+        if (skuLsParams.getValueId()!=null && skuLsParams.getValueId().length>0){
+            String[] valueIds = skuLsParams.getValueId();
+            for (int i = 0; i < valueIds.length; i++) {
+                String valueId = valueIds[i];
+                boolQueryBuilder.filter(new TermQueryBuilder("skuAttrValueList.valueId",valueId));
+            }
+        }
+        boolQueryBuilder.filter(new RangeQueryBuilder("price").gte("0"));
         searchSourceBuilder.query(boolQueryBuilder);
         int form = (skuLsParams.getPageNo()-1)*skuLsParams.getPageSize();
         searchSourceBuilder.from(form);
         searchSourceBuilder.size(skuLsParams.getPageSize());
-        searchSourceBuilder.highlight(new HighlightBuilder().field("skuName").preTags("<span style='color:red' >").postTags("</span>"));
+
         //排序
         searchSourceBuilder.sort("hotScore", SortOrder.DESC);
         //聚合
@@ -51,12 +64,34 @@ public class ListServiceImpl implements ListService {
         Search.Builder builder = new Search.Builder(searchSourceBuilder.toString());
         Search search = builder.addIndex("gmall_sku_info").addType("doc").build();
         try {
-            jestClient.execute(search);
+            SearchResult execute = jestClient.execute(search);
+            List<SkuLsInfo> skuLsList = new ArrayList<>();
+            List<SearchResult.Hit<SkuLsInfo, Void>> hits = execute.getHits(SkuLsInfo.class);
+            for (SearchResult.Hit<SkuLsInfo, Void> hit : hits) {
+                SkuLsInfo source = hit.source;
+                skuLsList.add(source);
+            }
+            skuLsResult.setSkuLsInfoList(skuLsList);
+            //总数
+            long total = execute.getTotal();
+
+            skuLsResult.setTotal(total);
+            //总页数
+            long totalPage= (execute.getTotal() + skuLsParams.getPageSize() -1) / skuLsParams.getPageSize();
+            skuLsResult.setTotalPages(totalPage);
+            //聚合部分
+            MetricAggregation aggregations = execute.getAggregations();
+            List<String> attrValueIdList = new ArrayList<>();
+            List<TermsAggregation.Entry> buckets = aggregations.getTermsAggregation("groupby_valueId").getBuckets();
+            for (TermsAggregation.Entry bucket : buckets) {
+                attrValueIdList.add(bucket.getKey());
+            }
+            skuLsResult.setAttrValueIdList(attrValueIdList);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return null;
+        return skuLsResult;
     }
 
     @Autowired

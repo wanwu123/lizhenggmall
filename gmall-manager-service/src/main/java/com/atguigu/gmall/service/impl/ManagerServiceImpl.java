@@ -7,6 +7,7 @@ import com.atguigu.gamll.service.ManagerService;
 import com.atguigu.gmall.entity.*;
 import com.atguigu.gmall.mapper.*;
 import com.atguigu.gmall.util.RedisUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.redisson.Redisson;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -24,6 +25,13 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class ManagerServiceImpl implements ManagerService {
+    @Override
+    public List<BaseAttrInfo> getAttrList(List attrValueIdList) {
+        String join = StringUtils.join(attrValueIdList.toArray(), ",");
+        List<BaseAttrInfo> baseAttrInfoListByValueIds = baseAttrInfoMapper.getBaseAttrInfoListByValueIds(join);
+        return baseAttrInfoListByValueIds;
+    }
+
     public static final String SKUKEY_PREFIX = "sku:";
     public static final String SKUKEY_INFO_SUFFIX = ":info";
     public static final String SKUKEY_LOCK_SUFFIX = ":lock";

@@ -42,4 +42,6 @@ public interface ManagerService {
     List<SpuSaleAttr> getSpuSaleAttrListCheck(String skuId,String spuId);
 
     public Map getSaleAttrValuesByspuId(String spuId);
+
+    public List<BaseAttrInfo> getAttrList(List attrValueIdList);
 }
