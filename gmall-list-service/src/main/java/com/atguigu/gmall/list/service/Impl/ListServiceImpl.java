@@ -5,10 +5,12 @@ import com.atguigu.gamll.service.ListService;
 import com.atguigu.gmall.entity.SkuLsInfo;
 import com.atguigu.gmall.entity.SkuLsParams;
 import com.atguigu.gmall.entity.SkuLsResult;
+import com.atguigu.gmall.util.RedisUtil;
 import io.searchbox.client.JestClient;
 import io.searchbox.core.Index;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
+import io.searchbox.core.Update;
 import io.searchbox.core.search.aggregation.MetricAggregation;
 import io.searchbox.core.search.aggregation.TermsAggregation;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -21,6 +23,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +31,34 @@ import java.util.List;
 
 @Service
 public class ListServiceImpl implements ListService {
+
+    @Autowired
+    private RedisUtil redisUtil;
+    @Override
+    public void incrHotScore(String skuId) {
+        Jedis jedis = redisUtil.getJedis();
+        int timesToEs=10;
+        String hotScoreKey = "sku:"+skuId+":hostscore";
+        Long hotScore = jedis.incr(hotScoreKey);
+        if (hotScore % timesToEs == 0){
+            updateHotScoreEs(skuId,hotScore);
+        }
+    }
+    public void updateHotScoreEs(String skuId,Long hotScore){
+        String updateString = "{\n" +
+                "\"doc\":{\n" +
+                "     \"hotScore\":"+hotScore+"\n" +
+                "   }\n" +
+                "}";
+        Update.Builder builder = new Update.Builder(updateString).index("gmall_sku_info").type("doc").id(skuId);
+        Update update = builder.build();
+        try {
+            jestClient.execute(update);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public SkuLsResult getSkuLsInfoList(SkuLsParams skuLsParams) {
 //        String query = null;
@@ -69,6 +100,10 @@ public class ListServiceImpl implements ListService {
             List<SearchResult.Hit<SkuLsInfo, Void>> hits = execute.getHits(SkuLsInfo.class);
             for (SearchResult.Hit<SkuLsInfo, Void> hit : hits) {
                 SkuLsInfo source = hit.source;
+                if (hit.highlight!=null){
+                    String skuNameHL = hit.highlight.get("skuName").get(0);
+                    source.setSkuName(skuNameHL);
+                }
                 skuLsList.add(source);
             }
             skuLsResult.setSkuLsInfoList(skuLsList);
