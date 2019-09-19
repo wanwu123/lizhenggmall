@@ -17,4 +17,6 @@ public interface UserService {
     void delUser(UserInfo userInfo);
 
     UserInfo getUserById(String id);
+
+    UserInfo login(UserInfo userInfo);
 }
