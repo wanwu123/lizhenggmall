@@ -9,9 +9,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -40,7 +38,7 @@ public class PassportController {
             map.put("nickName",userInfo2.getNickName());
             //配置Nginx
 //            request.getRemoteAddr();
-            String header = request.getHeader(" X-forwarded-for");
+            String header = request.getHeader("X-forwarded-for");
             String token = JwtUtil.encode(jwtKey, map, header);
             return token;
         }
@@ -48,6 +46,21 @@ public class PassportController {
         return "fail";
     }
 
+    @GetMapping("verify")
+    @ResponseBody
+    public String verify(@RequestParam("token")String token,@RequestParam("currentIp")String currentIp ){
+        //验证Token
+        Map<String, Object> decode = JwtUtil.decode(token, jwtKey, currentIp);
+        //验证缓存
+        if (decode !=null){
+            String userId =(String) decode.get("userId");
+            UserInfo userInfo = userService.verfly(userId);
+            if (userInfo != null){
+                return "success";
+            }
+        }
+        return "fail";
+    }
     @Test
     public void testJWT(){
         Map<String, Object> map = new HashMap<>();

@@ -19,4 +19,6 @@ public interface UserService {
     UserInfo getUserById(String id);
 
     UserInfo login(UserInfo userInfo);
+
+    UserInfo verfly(String userId);
 }

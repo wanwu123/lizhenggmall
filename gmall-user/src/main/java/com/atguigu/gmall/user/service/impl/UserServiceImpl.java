@@ -18,6 +18,19 @@ import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService{
+    @Override
+    public UserInfo verfly(String userId) {
+        Jedis jedis = redisUtil.getJedis();
+        String user = jedis.get(userKey_prefix + userId + userinfoKey_suffix);
+        UserInfo userInfo = JSON.parseObject(user, UserInfo.class);
+        jedis.expire(userKey_prefix + userId + userinfoKey_suffix,userKey_timeOut);
+        jedis.close();
+        if (userInfo!=null){
+            return userInfo;
+        }
+        return null;
+    }
+
     @Autowired
     UserMapper userMapper;
     public String userKey_prefix="user:";
