@@ -26,7 +26,7 @@ public class ListController {
     @Reference
     private ListService listService;
     @GetMapping("list.html")
-    @LoginRequire
+    @LoginRequire(autoRedirect= false)
 //    @ResponseBody
     public String getList(SkuLsParams skuLsParams,Model model){
         SkuLsResult skuLsResult = listService.getSkuLsInfoList(skuLsParams);

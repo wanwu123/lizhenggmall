@@ -60,8 +60,13 @@ public class AuthIntercepetor extends HandlerInterceptorAdapter{
                     redirect(request,response);
                 }
             }else {
-                //跳转登录
-                redirect(request,response);
+                if (!methodAnnotation.autoRedirect()){
+                    return true;
+                }else {
+                    //跳转登录
+                    redirect(request,response);
+                }
+
             }
         }
         return true;

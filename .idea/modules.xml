@@ -2,10 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/cart-web/cart-web.iml" filepath="$PROJECT_DIR$/cart-web/cart-web.iml" />
       <module fileurl="file://$PROJECT_DIR$/fastdfs-client-java/fastdfs-client-java.iml" filepath="$PROJECT_DIR$/fastdfs-client-java/fastdfs-client-java.iml" />
       <module fileurl="file://$PROJECT_DIR$/gamll-interface/gamll-interface.iml" filepath="$PROJECT_DIR$/gamll-interface/gamll-interface.iml" />
       <module fileurl="file://$PROJECT_DIR$/gamll-parent/gamll-parent.iml" filepath="$PROJECT_DIR$/gamll-parent/gamll-parent.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-bean/gmall-bean.iml" filepath="$PROJECT_DIR$/gmall-bean/gmall-bean.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gmall-cart-service/gmall-cart-service.iml" filepath="$PROJECT_DIR$/gmall-cart-service/gmall-cart-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-common-util/gmall-common-util.iml" filepath="$PROJECT_DIR$/gmall-common-util/gmall-common-util.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-list-service/gmall-list-service.iml" filepath="$PROJECT_DIR$/gmall-list-service/gmall-list-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-list-web/gmall-list-web.iml" filepath="$PROJECT_DIR$/gmall-list-web/gmall-list-web.iml" />
