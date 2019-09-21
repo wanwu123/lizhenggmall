@@ -11,6 +11,9 @@ import com.atguigu.gmall.entity.SkuInfo;
 import com.atguigu.gmall.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import redis.clients.jedis.Jedis;
+import tk.mybatis.mapper.entity.Example;
+
+import java.util.List;
 
 @Service
 public class cartServiceImpl implements CartService{
