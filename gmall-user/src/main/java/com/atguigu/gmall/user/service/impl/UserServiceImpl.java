@@ -52,9 +52,9 @@ public class UserServiceImpl implements UserService{
             jedis.setex(userKey_prefix+userInfo1.getId()+userinfoKey_suffix,userKey_timeOut, JSON.toJSONString(userInfo1));
             jedis.close();
             return userInfo1;
-        }else {
-            return null;
         }
+        return null;
+
 
 
     }

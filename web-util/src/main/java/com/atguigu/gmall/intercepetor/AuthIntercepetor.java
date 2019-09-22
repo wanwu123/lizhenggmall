@@ -65,6 +65,7 @@ public class AuthIntercepetor extends HandlerInterceptorAdapter{
                 }else {
                     //跳转登录
                     redirect(request,response);
+                    return false;
                 }
 
             }
