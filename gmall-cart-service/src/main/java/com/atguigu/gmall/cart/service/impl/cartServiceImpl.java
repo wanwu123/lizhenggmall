@@ -166,6 +166,7 @@ public class cartServiceImpl implements CartService{
         jedis.close();
 
         //加数据库
+        loadCartCache(userId);
         return cartInfoExists;
     }
 }
