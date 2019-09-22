@@ -1,6 +1,7 @@
 package com.atguigu.gamll.service;
 
 
+import com.atguigu.gmall.entity.UserAddress;
 import com.atguigu.gmall.entity.UserInfo;
 
 import java.util.List;
@@ -21,4 +22,6 @@ public interface UserService {
     UserInfo login(UserInfo userInfo);
 
     UserInfo verfly(String userId);
+
+    List<UserAddress> getAddress(String userId);
 }

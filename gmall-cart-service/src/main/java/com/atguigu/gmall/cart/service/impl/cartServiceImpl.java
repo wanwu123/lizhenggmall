@@ -18,6 +18,40 @@ import java.util.*;
 @Service
 public class cartServiceImpl implements CartService{
     @Override
+    public List<CartInfo> getCheckedCartList(String userId) {
+        String skuKey = "cart:"+userId+":info";
+        Jedis jedis = redisUtil.getJedis();
+        List<String> hvals = jedis.hvals(skuKey);
+        List<CartInfo> cartList = new ArrayList<>();
+        for (String hval : hvals) {
+            CartInfo cartInfo = JSON.parseObject(hval, CartInfo.class);
+            cartList.add(cartInfo);
+        }
+        return cartList;
+    }
+
+    @Override
+    public void checkCart(String userId, String skuId, String isChecked) {
+        //用于检查缓存避免失效
+        loadCartCacheIfNotExists(userId);
+        String skuKey = "cart:"+userId + ":info";
+        Jedis jedis = redisUtil.getJedis();
+        String cartInfoJson = jedis.hget(skuKey, skuId);
+        CartInfo cartInfo = JSON.parseObject(cartInfoJson, CartInfo.class);
+        cartInfo.setIsChecked(isChecked);
+        String toJSONString = JSON.toJSONString(cartInfo);
+        jedis.hset(skuKey,skuId,toJSONString);
+        String cartKey = "cart:"+userId+":checked";
+        if (isChecked.equals("1")){
+            jedis.hset(cartKey,skuId,toJSONString);
+            jedis.expire(cartKey,60*60);
+        }else{
+            jedis.hdel(cartKey,skuId);
+        }
+        jedis.close();
+    }
+
+    @Override
     public List<CartInfo> mergeCartList(String userIdDest, String userIdOrig) {
         //先做合并
         cartInfoMapper.mergeCartInfo(userIdDest,userIdOrig);
@@ -64,7 +98,19 @@ public class cartServiceImpl implements CartService{
         }
 
     }
+    public void  loadCartCacheIfNotExists(String userId){
+        String cartkey="cart:"+userId+":info";
+        Jedis jedis = redisUtil.getJedis();
+        Long ttl = jedis.ttl(cartkey);
+        int ttlInt = ttl.intValue();
+        jedis.expire(cartkey,ttlInt+10);
+        Boolean exists = jedis.exists(cartkey);
+        jedis.close();
+        if(!exists){
+            loadCartCache( userId);
+        }
 
+    }
     private List<CartInfo> loadCartCache(String userId) {
         List<CartInfo> cartInfoList =  cartInfoMapper.selectCartListWithSkuPrice(userId);
         //写入缓存
@@ -85,6 +131,7 @@ public class cartServiceImpl implements CartService{
 
     @Override
     public CartInfo  addCart(String userId, String skuId, Integer num) {
+        loadCartCacheIfNotExists(userId);
         //加数据库
         //尝试取出已有数据 更新或者插入数据
         CartInfo cartInfo = new CartInfo();

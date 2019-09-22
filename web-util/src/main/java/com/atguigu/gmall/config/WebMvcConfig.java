@@ -13,7 +13,7 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authIntercepetor).addPathPatterns("/**");
+        registry.addInterceptor(authIntercepetor).addPathPatterns("/**").addPathPatterns("/static/**").addPathPatterns("/templates/**");
     }
 
 }

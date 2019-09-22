@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +24,17 @@ public class CartController {
 
     @Reference
     private CartService cartService;
+
+    @PostMapping("checkCart")
+    @ResponseBody
+    @LoginRequire(autoRedirect = false)
+    public void checkCart(HttpServletRequest request,@RequestParam("isChecked")String isChecked,@RequestParam("skuId")String skuId){
+        String userId = (String)request.getAttribute("userId");
+        if (userId == null){
+            userId = CookieUtil.getCookieValue(request,"user_tmp_id",false);
+        }
+        cartService.checkCart(userId,skuId,isChecked);
+    }
 
     @PostMapping("addToCart")
     @LoginRequire(autoRedirect = false)
@@ -46,20 +58,27 @@ public class CartController {
     @LoginRequire(autoRedirect = false)
     public String cartList(HttpServletRequest request) {
         String userId = (String) request.getAttribute("userId");
-        List<CartInfo> cartList = new ArrayList<>();
-        if(userId!=null) {
-            cartList = cartService.cartList(userId);
+        if(userId!=null){   //有登录
+            List<CartInfo> cartList=null;   //如果登录前（未登录）时，存在临时购物车 ，要考虑合并
+            String userTmpId=CookieUtil.getCookieValue(request, "user_tmp_id", false); //取临时id
+            if(userTmpId!=null){
+                List<CartInfo> cartTempList =  cartService.cartList(  userTmpId);  //如果有临时id ，查是否有临时购物车
+                if( cartTempList!=null&&cartTempList.size()>0){
+                    cartList=  cartService.mergeCartList(userId,userTmpId); // 如果有临时购物车 ，那么进行合并 ，并且获得合并后的购物车列表
+                }
+            }
+            if(cartList==null||cartList.size()==0){
+                cartList =  cartService.cartList(  userId);  //如果不需要合并 ，再取登录后的购物车
+            }
+            request.setAttribute("cartList",cartList);
+        }else {   //未登录 直接取临时购物车
+            String userTmpId=CookieUtil.getCookieValue(request, "user_tmp_id", false);
+            if(userTmpId!=null) {
+                List<CartInfo> cartTempList = cartService.cartList(userTmpId);
+                request.setAttribute("cartList",cartTempList);
+            }
+
         }
-        String  tmpId = CookieUtil.getCookieValue(request, "user_tmp_id", false);
-        List<CartInfo> tmpList = new ArrayList<>();
-        if (tmpId!=null){
-            tmpList = cartService.cartList(tmpId);
-            cartList = tmpList;
-        }
-        if (userId != null && tmpList != null && tmpList.size()>0){
-            cartList = cartService.mergeCartList(userId,tmpId);
-        }
-        request.setAttribute("cartList", cartList);
         return "cartList";
     }
 }

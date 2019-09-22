@@ -100,7 +100,7 @@
                             var originUrl = $("#originUrl").val();
                             console.log("originUrl:"+originUrl);
                             if(originUrl==''){
-                                window.location.href="http://www.lizhenggmall.com/"
+                                window.location.href="http://www.lizhenggmall.com?newToken="+data;
 								return ;
                             }
                               originUrl = decodeURIComponent(originUrl);
@@ -111,6 +111,7 @@
                             }else{
                                 originUrl+='&'
                             }
+                            console.log(originUrl+"newToken="+data);
                             window.location.href=originUrl+"newToken="+data;
                             return ;
                         }else{

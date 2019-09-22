@@ -4,6 +4,7 @@ package com.atguigu.gmall.passport.controller;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.atguigu.gamll.service.UserService;
 import com.atguigu.gmall.entity.UserInfo;
+import com.atguigu.gmall.util.CookieUtil;
 import com.atguigu.gmall.util.JwtUtil;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +32,7 @@ public class PassportController {
     }
     @PostMapping("login")
     @ResponseBody
-    public String login(UserInfo userInfo,HttpServletRequest request) {
+    public String login(UserInfo userInfo, HttpServletRequest request) {
         UserInfo userInfo2 = userService.login(userInfo);
         if (userInfo2!=null){
             Map<String, Object> map = new HashMap<>();
