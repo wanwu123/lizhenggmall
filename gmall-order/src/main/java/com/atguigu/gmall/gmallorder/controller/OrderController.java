@@ -37,6 +37,12 @@ public class OrderController {
     @LoginRequire
     public String submitOrder(OrderInfo orderInfo,HttpServletRequest request){
         String userId =(String) request.getAttribute("userId");
+        String tradeNo = request.getParameter("tradeNo");
+        Boolean aBoolean = orderService.verifyToken(userId, tradeNo);
+        if(!aBoolean){
+            request.setAttribute("errMsg","页面已失效，请重新结算！");
+            return  "tradeFail";
+        }
         orderInfo.setOrderStatus(OrderStatus.UNPAID);
         orderInfo.setProcessStatus(ProcessStatus.UNPAID);
         orderInfo.setCreateTime(new Date());
@@ -71,6 +77,8 @@ public class OrderController {
             BigDecimal multiply = skuPrice.multiply(bigDecimal);
             totalAoumt = totalAoumt.add(multiply);
         }
+        String token = orderService.getToken(userId);
+        request.setAttribute("tradeNo",token);
         request.setAttribute("cartList",cartList);
 
         request.setAttribute("totalAoumt",totalAoumt);

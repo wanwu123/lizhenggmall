@@ -127,7 +127,7 @@
 				<input th:name="'orderDetailList['+${stat.index}+'].skuNum'" type="hidden" th:value="${cartInfo.skuNum}"   value="" />
 				<input th:name="'orderDetailList['+${stat.index}+'].orderPrice'"  type="hidden"  th:value="${cartInfo.skuPrice}"  value="" />
 			</span>
-			<input name="tradeNo" type="hidden"  value=""  />
+			<input name="tradeNo" type="hidden"  th:value="${tradeNo}"  />
 		</form>
 		<script>
             $(function() {

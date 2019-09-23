@@ -614,7 +614,7 @@
 
             if($(this).prop("checked")){
                 console.log("check!!"+ $(this).parents("ol").find(".zj").html());
-                var zj = $(this).parents("ol").find(".zj").html().substring(1);
+                var zj = $(this).parents("ol").find(".zj").html().substring(0);
                 console.log(" 价格："+zj);
                 zzj=zzj+parseFloat(zj);
             }
