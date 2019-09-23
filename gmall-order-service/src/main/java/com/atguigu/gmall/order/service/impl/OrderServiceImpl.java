@@ -19,6 +19,15 @@ import java.util.UUID;
 @Service
 public class OrderServiceImpl implements OrderService{
     @Override
+    public OrderInfo getOrderInfo(String orderId) {
+        OrderInfo orderInfo = orderInfoMapper.selectByPrimaryKey(orderId);
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setOrderId(orderId);
+        orderInfo.setOrderDetailList(orderDetailMapper.select(orderDetail));
+        return orderInfo;
+    }
+
+    @Override
     public Boolean verifyToken(String userId,String token) {
         String tokenKey="user:"+userId+":trade_code";
         Jedis jedis = redisUtil.getJedis();
@@ -44,7 +53,7 @@ public class OrderServiceImpl implements OrderService{
         Jedis jedis = redisUtil.getJedis();
         jedis.setex(tokenKey,10*60,token);
         jedis.close();
-        return null;
+        return token;
     }
     @Autowired
     private RedisUtil redisUtil;
@@ -54,13 +63,13 @@ public class OrderServiceImpl implements OrderService{
     private OrderInfoMapper orderInfoMapper;
     @Override
     @Transactional
-    public void saveOrder(OrderInfo orderInfo) {
+    public String saveOrder(OrderInfo orderInfo) {
         orderInfoMapper.insertSelective(orderInfo);
         List<OrderDetail> orderDetailList = orderInfo.getOrderDetailList();
         for (OrderDetail orderDetail : orderDetailList) {
             orderDetail.setOrderId(orderInfo.getId());
             orderDetailMapper.insertSelective(orderDetail);
         }
-
+        return  orderInfo.getId();
     }
 }

@@ -16,8 +16,10 @@
       <module fileurl="file://$PROJECT_DIR$/gmall-order/gmall-order.iml" filepath="$PROJECT_DIR$/gmall-order/gmall-order.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-order-service/gmall-order-service.iml" filepath="$PROJECT_DIR$/gmall-order-service/gmall-order-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-passport/gmall-passport.iml" filepath="$PROJECT_DIR$/gmall-passport/gmall-passport.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gmall-payment/gmall-payment.iml" filepath="$PROJECT_DIR$/gmall-payment/gmall-payment.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-service-util/gmall-service-util.iml" filepath="$PROJECT_DIR$/gmall-service-util/gmall-service-util.iml" />
       <module fileurl="file://$PROJECT_DIR$/gmall-user/gmall-user.iml" filepath="$PROJECT_DIR$/gmall-user/gmall-user.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gware-manage/gware-manage.iml" filepath="$PROJECT_DIR$/gware-manage/gware-manage.iml" />
       <module fileurl="file://$PROJECT_DIR$/item-web/item-web.iml" filepath="$PROJECT_DIR$/item-web/item-web.iml" />
       <module fileurl="file://$PROJECT_DIR$/lizhenggmall.iml" filepath="$PROJECT_DIR$/lizhenggmall.iml" />
       <module fileurl="file://$PROJECT_DIR$/web-util/web-util.iml" filepath="$PROJECT_DIR$/web-util/web-util.iml" />

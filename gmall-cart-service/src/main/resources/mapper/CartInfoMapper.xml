@@ -3,7 +3,7 @@
 <mapper namespace="com.atguigu.gmall.cart.mapper.CartInfoMapper">
     <select id="selectCartListWithSkuPrice" resultMap="cartMap">
 
-SELECT ci.id,user_id,ci.sku_id,ci.cart_price,ci.sku_num,ci.img_url,si.price sku_price
+SELECT ci.id,user_id,ci.sku_id,ci.cart_price,ci.sku_num,ci.img_url,si.price sku_price,ci.sku_name
 from cart_info ci JOIN sku_info si on ci.sku_id = si.id
 WHERE ci.user_id = #{userId}
     </select>
