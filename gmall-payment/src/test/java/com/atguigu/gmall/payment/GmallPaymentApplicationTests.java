@@ -1,4 +1,4 @@
-package com.atguigu.com.payment;
+package com.atguigu.gmall.payment;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

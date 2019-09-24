@@ -1,4 +1,4 @@
-package com.atguigu.com.payment;
+package com.atguigu.gmall.payment;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
