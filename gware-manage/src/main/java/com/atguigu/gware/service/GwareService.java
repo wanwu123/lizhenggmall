@@ -14,7 +14,7 @@ import java.util.Map;
 public interface GwareService {
     public Integer  getStockBySkuId(String skuid);
 
-    public boolean  hasStockBySkuId(String skuid,Integer num);
+    public boolean  hasStockBySkuId(String skuid, Integer num);
 
     public List<WareInfo> getWareInfoBySkuid(String skuid);
 
@@ -26,7 +26,7 @@ public interface GwareService {
 
     public void deliveryStock(WareOrderTask taskExample) ;
 
-    public WareOrderTask saveWareOrderTask(WareOrderTask wareOrderTask );
+    public WareOrderTask saveWareOrderTask(WareOrderTask wareOrderTask);
 
     public  List<WareOrderTask>   checkOrderSplit(WareOrderTask wareOrderTask);
 

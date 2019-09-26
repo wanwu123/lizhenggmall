@@ -38,6 +38,13 @@ public class PaymentController {
     @Autowired
     private AlipayClient alipayClient;
 
+    @GetMapping("sendPayment")
+    @ResponseBody
+    public String sendPayment(String orderId,String result){
+       paymentService.sendPaymentToOrder(orderId,result);
+        return  "success";
+    }
+
     @GetMapping("index")
 //    @LoginRequire
     public  String index(HttpServletRequest request, Model model){
@@ -82,11 +89,15 @@ public class PaymentController {
         paymentInfo.setOutTradeNo(outTradeNo);
         paymentInfo.setPaymentStatus( PaymentStatus.UNPAID);
         paymentService.savePaymentInfo(paymentInfo);
+        paymentService.sendDelayPaymentResult(outTradeNo,15L,3);
         return AlipayHtml;
     }
     @RequestMapping(value = "/alipay/callback/notify",method = RequestMethod.POST)
     @ResponseBody
     public  String paymentNotify(@RequestParam Map<String,String> paramMap,HttpServletRequest request){
+//        if (1==1){
+//            return "";
+//        }
         boolean flag = false;
         try {
             flag = AlipaySignature.rsaCheckV1(paramMap, AlipayConfig.alipay_public_key, "UTF-8", AlipayConfig.sign_type);

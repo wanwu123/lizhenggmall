@@ -5,6 +5,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.atguigu.gamll.service.OrderService;
 import com.atguigu.gmall.entity.OrderDetail;
 import com.atguigu.gmall.entity.OrderInfo;
+import com.atguigu.gmall.entity.enums.ProcessStatus;
 import com.atguigu.gmall.order.mapper.OrderDetailMapper;
 import com.atguigu.gmall.order.mapper.OrderInfoMapper;
 import com.atguigu.gmall.util.RedisUtil;
@@ -16,8 +17,23 @@ import redis.clients.jedis.Transaction;
 import java.util.List;
 import java.util.UUID;
 
+
 @Service
 public class OrderServiceImpl implements OrderService{
+
+
+    @Override
+    public void updateOrederStatus(String orderId, ProcessStatus paid,OrderInfo... orderInfos) {
+        OrderInfo orderInfo = new OrderInfo();
+        if (orderInfos!=null && orderInfos.length>0){//如果还需更新其他订单信息则使用可变参数
+            orderInfo  = orderInfos[0];
+        }
+        orderInfo.setProcessStatus(paid);
+        orderInfo.setId(orderId);
+        orderInfo.setOrderStatus(paid.getOrderStatus());
+        orderInfoMapper.updateByPrimaryKeySelective(orderInfo);
+    }
+
     @Override
     public OrderInfo getOrderInfo(String orderId) {
         OrderInfo orderInfo = orderInfoMapper.selectByPrimaryKey(orderId);
