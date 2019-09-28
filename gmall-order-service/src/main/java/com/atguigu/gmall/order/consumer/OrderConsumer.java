@@ -64,7 +64,7 @@ public class OrderConsumer  {
     }
 
     public void sendOrderToWare(String orderId) throws JMSException {
-        String initWareOrderString = initWareOrder(orderId);
+        String initWareOrderString = orderService.initWareOrder(orderId);
         Connection connection = activeMqUtil.getConnection();
         Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
         Queue sendOrder = session.createQueue("ORDER_RESULT_QUEUE");
@@ -79,35 +79,5 @@ public class OrderConsumer  {
         orderService.updateOrederStatus(orderId, ProcessStatus.NOTIFIED_WARE);
     }
 
-    /**
-     * 初始化发送到库存系统的参数
-     * @param orderId
-     * @return
-     */
-    public String initWareOrder(String orderId){
-        OrderInfo orderInfo = orderService.getOrderInfo(orderId);
-        if (orderInfo != null){
-            Map map = new HashMap();
-            map.put("orderId",orderId);
-            map.put("consignee",orderInfo.getConsignee());
-            map.put("consigneeTel",orderInfo.getConsigneeTel());
-            map.put("orderComment",orderInfo.getOrderComment());
-            map.put("orderBody",orderInfo.genSubject());
-            map.put("deliveryAddress",orderInfo.getDeliveryAddress());
-            map.put("paymentWay","2");
-            map.put("wareId",orderInfo.getWareId());
-            List detailList = new ArrayList();
-            List<OrderDetail> orderDetailList = orderInfo.getOrderDetailList();
-            for (OrderDetail orderDetail : orderDetailList) {
-                Map<Object, Object> demap = new HashMap<>();
-                demap.put("skuId",orderDetail.getSkuId());
-                demap.put("skuName",orderDetail.getSkuName());
-                demap.put("skuNum",orderDetail.getSkuNum());
-                detailList.add(demap);
-            }
-            map.put("details",detailList);
-            return JSON.toJSONString(map);
-        }
-        return null;
-    }
+
 }

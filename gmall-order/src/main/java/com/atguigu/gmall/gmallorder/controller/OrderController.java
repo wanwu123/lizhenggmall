@@ -2,6 +2,7 @@ package com.atguigu.gmall.gmallorder.controller;
 
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.fastjson.JSON;
 import com.atguigu.gamll.service.CartService;
 import com.atguigu.gamll.service.ManagerService;
 import com.atguigu.gamll.service.OrderService;
@@ -15,6 +16,7 @@ import org.apache.catalina.Manager;
 import org.apache.commons.lang3.time.DateUtils;
 import org.assertj.core.util.DateUtil;
 import org.junit.Test;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,8 +65,13 @@ public class OrderController {
                 return  "tradeFail";
             }
         }
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(10);
+        threadPoolTaskExecutor.setQueueCapacity(100);
+        threadPoolTaskExecutor.setMaxPoolSize(50);
+        threadPoolTaskExecutor.initialize();
         List<OrderDetail> relist = Collections.synchronizedList(new ArrayList<>());
-        Stream<CompletableFuture<String>> completableFutureStream = orderDetailList.stream().map(orderDetail -> CompletableFuture.supplyAsync(() -> checkSkuNum(orderDetail)).whenComplete((ifPaas, ex) -> {
+        Stream<CompletableFuture<String>> completableFutureStream = orderDetailList.stream().map(orderDetail -> CompletableFuture.supplyAsync(() -> checkSkuNum(orderDetail),threadPoolTaskExecutor ).whenComplete((ifPaas, ex) -> {
             if (ifPaas.equals("0")) {
                 relist.add(orderDetail);
             }
@@ -148,5 +155,12 @@ public class OrderController {
 
         request.setAttribute("totalAoumt",totalAoumt);
         return "trade";
+    }
+    @PostMapping("orderSplit")
+    @ResponseBody
+    public String  orderSplit(@RequestParam("orderId")String orderId,@RequestParam("wareSkuMap")String wareSkuMap){
+        List<Map> orderDetailForWareList  =orderService.orderSplit(orderId,wareSkuMap);
+        String orderJsonString = JSON.toJSONString(orderDetailForWareList);
+        return orderJsonString;
     }
 }
